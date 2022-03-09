@@ -21,8 +21,15 @@ import like from "./like.svg";
 
 export default function App() {
   const [data, setData] = useState([]);
+  const [favs, setFavs] = useState([]);
+  const [view, setView] = useState("feed");
+  const [isSearch, setIsSearch] = useState(false);
 
   useEffect(() => {
+
+    setIsSearch(true)
+     
+
     const desuscribir = fireStore
       .collection("tweets")
       .onSnapshot((snapshot) => {
@@ -37,7 +44,12 @@ export default function App() {
           tweets.push(snap);
         });
         setData(tweets);
+        setFavs(tweets.filter(item => {
+          return item.likes > 0;
+        }))
+        setIsSearch(false)
       });
+
     return () => {
       desuscribir();
     };
@@ -47,8 +59,8 @@ export default function App() {
 
   const deleteTweet = (id) => {
 
-    const userConfirm = confirm("Clicka en Aceptar o Cancelar");
-
+    const userConfirm = window.confirm("Clicka en Aceptar o Cancelar");
+    
     if(userConfirm){
       //Filtramos nuestro state con el documento que ya no
     // necesitamos con Array.filter
@@ -80,7 +92,11 @@ export default function App() {
     <div className="App centered column">
       <Form data={data} setData={setData} />
       <section className="tweets">
-        {data.map((item) => (
+        {isSearch ? <p>Cargando...</p> : null}
+        <button type="button" onClick={() => setView("feed") }>Tweets</button>
+        <button type="button" onClick={() => setView("favs")}>Favs</button>
+
+        {(view === "feed" ? data : favs).map((item) => (
           <div className="tweet" key={item.id}>
             <div className="tweet-content">
               <p>{item.tweet}</p>
