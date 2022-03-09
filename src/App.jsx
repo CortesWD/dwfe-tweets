@@ -23,6 +23,7 @@ export default function App() {
   const [data, setData] = useState([]);
   const [flag, setFlag] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [ids, setIds] = useState("")
 
   useEffect(() => {
     const desuscribir = fireStore
@@ -45,27 +46,31 @@ export default function App() {
       desuscribir();
     };
   }, []);
-  const confirmDelete = ()=>{
+  const confirmDelete = (id)=>{
     setFlag(true)
+    setIds(id)
+
   }
-  const deleteTweet = (id) => {
+  const deleteTweet = () => {
     //Filtramos nuestro state con el documento que ya no
     // necesitamos con Array.filter
     const updatedTweets = data.filter((tweet) => {
-      return tweet.id !== id;
+      return tweet.id !== ids;
     });
 
-    const cancelDelete = ()=>{
-      setFlag(false)
-    }
-
+    
     //Actualizamos nuestro state con el array actualizado
     setData(updatedTweets);
 
     //Borramos documento de Firebase
-    fireStore.doc(`tweets/${id}`).delete();
+    fireStore.doc(`tweets/${ids}`).delete();
+    setIds("")
+    setFlag(false)
   };
 
+    const cancelDelete = ()=>{
+      setFlag(false)
+    }
 
   /**
    *@description Funcion que actualiza likes en base de datos
@@ -99,20 +104,20 @@ export default function App() {
                 <span>{item.likes || 0}</span>
               </button>
             </div>
-            <button className="delete" onClick={confirmDelete() }>
+            <button className="delete" onClick={()=>confirmDelete (item.id)}>
               X
             </button>
-            {
-              flag && (<div>
-                <h3>Do you want to delete?</h3>
-                <button onClick={() => deleteTweet(item.id)} >Yes</button>
-                <button onClick={cancelDelete() } >No</button>
-              </div>
-              )
-            }
           </div>
         ))}
       </section>
+      }
+      {
+        flag && (<div>
+          <h3>Do you want to delete?</h3>
+          <button onClick={() => deleteTweet()} >Yes</button>
+          <button onClick={cancelDelete} >No</button>
+        </div>
+        )
       }
     </div>
   );
