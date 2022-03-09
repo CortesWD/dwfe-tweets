@@ -59,7 +59,7 @@ export default function App() {
 
   const deleteTweet = (id) => {
 
-    const userConfirm = window.confirm("Clicka en Aceptar o Cancelar");
+    const userConfirm = window.confirm("Estas seguro que quieres eliminar este hermoso Tweet?");
     
     if(userConfirm){
       //Filtramos nuestro state con el documento que ya no
