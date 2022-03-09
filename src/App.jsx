@@ -43,18 +43,28 @@ export default function App() {
     };
   }, []);
 
+  
+
   const deleteTweet = (id) => {
-    //Filtramos nuestro state con el documento que ya no
+
+    const userConfirm = confirm("Clicka en Aceptar o Cancelar");
+
+    if(userConfirm){
+      //Filtramos nuestro state con el documento que ya no
     // necesitamos con Array.filter
     const updatedTweets = data.filter((tweet) => {
       return tweet.id !== id;
     });
+
+    
 
     //Actualizamos nuestro state con el array actualizado
     setData(updatedTweets);
 
     //Borramos documento de Firebase
     fireStore.doc(`tweets/${id}`).delete();
+    }
+    
   };
 
   /**
