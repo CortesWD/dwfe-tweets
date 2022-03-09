@@ -21,6 +21,8 @@ import like from "./like.svg";
 
 export default function App() {
   const [data, setData] = useState([]);
+  const [flag, setFlag] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const desuscribir = fireStore
@@ -37,12 +39,15 @@ export default function App() {
           tweets.push(snap);
         });
         setData(tweets);
+        setLoading(false)
       });
     return () => {
       desuscribir();
     };
   }, []);
-
+  const confirmDelete = ()=>{
+    setFlag(true)
+  }
   const deleteTweet = (id) => {
     //Filtramos nuestro state con el documento que ya no
     // necesitamos con Array.filter
@@ -50,12 +55,17 @@ export default function App() {
       return tweet.id !== id;
     });
 
+    const cancelDelete = ()=>{
+      setFlag(false)
+    }
+
     //Actualizamos nuestro state con el array actualizado
     setData(updatedTweets);
 
     //Borramos documento de Firebase
     fireStore.doc(`tweets/${id}`).delete();
   };
+
 
   /**
    *@description Funcion que actualiza likes en base de datos
@@ -69,7 +79,8 @@ export default function App() {
   return (
     <div className="App centered column">
       <Form data={data} setData={setData} />
-      <section className="tweets">
+      {
+        loading ?<h2>Cargando</h2> : <section className="tweets">
         {data.map((item) => (
           <div className="tweet" key={item.id}>
             <div className="tweet-content">
@@ -88,12 +99,21 @@ export default function App() {
                 <span>{item.likes || 0}</span>
               </button>
             </div>
-            <button className="delete" onClick={() => deleteTweet(item.id)}>
+            <button className="delete" onClick={confirmDelete() }>
               X
             </button>
+            {
+              flag && (<div>
+                <h3>Do you want to delete?</h3>
+                <button onClick={() => deleteTweet(item.id)} >Yes</button>
+                <button onClick={cancelDelete() } >No</button>
+              </div>
+              )
+            }
           </div>
         ))}
       </section>
+      }
     </div>
   );
 }
