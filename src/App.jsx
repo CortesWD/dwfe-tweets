@@ -21,8 +21,15 @@ import like from "./like.svg";
 
 export default function App() {
   const [data, setData] = useState([]);
-
+  const [favs, setFavs] = useState([]);
+  const [view, setView] = useState("feed");
+  const [isSearch, setIsSearch] = useState(false);
+  //Se agregaron diferentes estados, para denotar si un tweet ha sido "corrido", "visto" o se puede considerar como "favorito".
   useEffect(() => {
+
+    setIsSearch(true)
+    //Se toma como que la variable "setIsSearch" es "verdadera" al correrse la aplicación, pero una vez hecha una vuelta con el useEffect, esta pasará a ser "falsa", esto tiene el proposito que una vez que se "renderize" la aplicación o realice su trabajo, muestre por un codigo mas a bajo un mensaje de "cargando".
+
     const desuscribir = fireStore
       .collection("tweets")
       .onSnapshot((snapshot) => {
@@ -37,24 +44,39 @@ export default function App() {
           tweets.push(snap);
         });
         setData(tweets);
+        setFavs(tweets.filter(item => {
+          return item.likes > 0;
+        }))
+        setIsSearch(false)
       });
+      //En "setFavs" se setearon tweets y se les aplicó un filtrado, y los tweets con un "like" mayor a cero, se iban a renderizar como "favoritos"
     return () => {
       desuscribir();
     };
   }, []);
 
+
+
   const deleteTweet = (id) => {
-    //Filtramos nuestro state con el documento que ya no
-    // necesitamos con Array.filter
-    const updatedTweets = data.filter((tweet) => {
-      return tweet.id !== id;
-    });
+    //Aqui se tiene la función con la que se elimina un tweet, en esta se agregó la variable "useConfirm" que contiene "window.confirm" que depsliega en pantalla una "alerta" pero con la diferencia que ".confirm" agrega un si o no, en este caso si la persona quiere eliminar o no el tweet.
+    const userConfirm = window.confirm("¿Estás seguro que quieres eliminar este hermoso Tweet?");
 
-    //Actualizamos nuestro state con el array actualizado
-    setData(updatedTweets);
+    if (userConfirm) {
+      //Filtramos nuestro state con el documento que ya no
+      // necesitamos con Array.filter
+      const updatedTweets = data.filter((tweet) => {
+        return tweet.id !== id;
+      });
+      //El codigo previo de updatedTweets se coloca dentro del useconfirm.
 
-    //Borramos documento de Firebase
-    fireStore.doc(`tweets/${id}`).delete();
+
+      //Actualizamos nuestro state con el array actualizado
+      setData(updatedTweets);
+
+      //Borramos documento de Firebase
+      fireStore.doc(`tweets/${id}`).delete();
+    }
+
   };
 
   /**
@@ -70,7 +92,12 @@ export default function App() {
     <div className="App centered column">
       <Form data={data} setData={setData} />
       <section className="tweets">
-        {data.map((item) => (
+        {isSearch ? <p>Cargando...</p> : null}
+        <button type="button" onClick={() => setView("feed") }>Tweets</button>
+        <button type="button" onClick={() => setView("favs") }>Favs</button>
+        {/** se colocaron dos botones para denotar cuales tweets eran "favoritos" y cuales "vistos", si el estado "view" estaba en "feed" se mostraría el "data(donde se tenían todos los tweets)" en caso contrario mostraría los tweets "favoritos", esto con el uso de un ternario y un mapeo. */}
+        {/* {data.map((item) => ( */}
+        {(view === "feed" ? data : favs).map((item) => (
           <div className="tweet" key={item.id}>
             <div className="tweet-content">
               <p>{item.tweet}</p>
