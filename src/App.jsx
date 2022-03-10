@@ -11,8 +11,8 @@ import Form from "./Form";
 /**
  * Firebase
  */
-import { fireStore } from "./firebase/firebase";
-
+import { fireStore, loginConGoogle, auth, logout } from "./firebase/firebase";
+// en import se agregaron los valores de "loginConGoogle", "auth" & "logout"
 /**
  * Styles
  */
@@ -24,7 +24,8 @@ export default function App() {
   const [favs, setFavs] = useState([]);
   const [view, setView] = useState("feed");
   const [isSearch, setIsSearch] = useState(false);
-  //Se agregaron diferentes estados, para denotar si un tweet ha sido "corrido", "visto" o se puede considerar como "favorito".
+  const [user, setUser] = useState(null);
+  //Se agregaron diferentes estados, para denotar si un tweet ha sido "corrido", "visto" o se puede considerar como "favorito". Se agregó un nuevo useState con user y setUser para las funcionalidades de autenticación.
   useEffect(() => {
 
     setIsSearch(true)
@@ -49,7 +50,12 @@ export default function App() {
         }))
         setIsSearch(false)
       });
-      //En "setFavs" se setearon tweets y se les aplicó un filtrado, y los tweets con un "like" mayor a cero, se iban a renderizar como "favoritos"
+      // En "setFavs" se setearon tweets y se les aplicó un filtrado, y los tweets con un "like" mayor a cero, se iban a renderizar como "favoritos", en la parte superior.
+      auth.onAuthStateChanged((user) => {
+        setUser(user);
+        console.log(user);
+      });
+      // Para el caso de tener usario de ingreso y salida, se agrego: auth.onAuthStateChanged en la linea superior.
     return () => {
       desuscribir();
     };
@@ -90,6 +96,19 @@ export default function App() {
 
   return (
     <div className="App centered column">
+      {/* { user ? (
+        <>
+          <div className="user-profile">
+            <img className="user-profile-pic" src={user.photoUrl} alt="/>
+            <p>¡Hola {user.displayName}!</p>
+            <button onCLick={logout}>Log out</button>
+          </div>
+        </>
+      ) : (
+        <button className="login-btn" onCLick={loginConGoogle}>
+          Login con google
+        </button>
+      )} */}
       <Form data={data} setData={setData} />
       <section className="tweets">
         {isSearch ? <p>Cargando...</p> : null}
