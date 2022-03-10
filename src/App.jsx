@@ -95,7 +95,7 @@ export default function App() {
         {isSearch ? <p>Cargando...</p> : null}
         <button type="button" onClick={() => setView("feed") }>Tweets</button>
         <button type="button" onClick={() => setView("favs") }>Favs</button>
-        {/** se colocaron dos botones para denotar cuales tweets eran "favoritos" y cuales "vistos", si el estado "view" estaba en "feed" se mostraría el "data(donde se tenían todos los tweets)" en caso contrario mostraría los tweets "favoritos", esto con el uso de un ternario y un mapeo. */}
+        {/** se colocaron dos botones para denotar cuales tweets eran "favoritos" y cuales "vistos", si el estado "view" estaba en "feed" se mostraría el "data(donde se tenían todos los tweets)" en caso contrario mostraría los tweets "favoritos", esto con el uso de un ternario y un mapeo. Todo lo que esté antes de un ".map" se somete a una "evaluación de código", pero por lo mismo que procede un .map, debe asegurarse que se analice un array.*/}
         {/* {data.map((item) => ( */}
         {(view === "feed" ? data : favs).map((item) => (
           <div className="tweet" key={item.id}>
