@@ -42,6 +42,7 @@ li {
   padding: 15px;
 }
 
+.login,
 .tweet-form {
   align-items: flex-end;
   background-color: #ccc;
@@ -53,6 +54,10 @@ li {
   margin: 0 auto 24px;
   max-width: 480px;
   padding: 4px 8px;
+}
+
+.login {
+  align-items: center;
 }
 
 .tweet-form textarea,
@@ -125,4 +130,8 @@ section.tweets {
   border-bottom: 1px solid #b2b2b2;
   padding-bottom: 4px;
   margin-bottom: 4px;
+}
+
+.btn-login {
+  max-width:240px;
 }
