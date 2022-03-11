@@ -7,11 +7,13 @@ import React, { useEffect, useState } from "react";
  * Components
  */
 import Form from "./Form";
+import Button from './components/button/Button';
 
 /**
  * Firebase
  */
-import { fireStore } from "./firebase/firebase";
+import { fireStore, loginWithGoogle, logout, auth } from './firebase/firebase';
+
 
 /**
  * Styles
@@ -21,6 +23,7 @@ import like from "./like.svg";
 
 export default function App() {
   const [data, setData] = useState([]);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     const desuscribir = fireStore
@@ -38,6 +41,12 @@ export default function App() {
         });
         setData(tweets);
       });
+
+    auth.onAuthStateChanged((user) => {
+      console.warn('LOGGED WIDTH:', user);
+      setUser(user);
+    });
+
     return () => {
       desuscribir();
     };
@@ -68,7 +77,18 @@ export default function App() {
 
   return (
     <div className="App centered column">
-      <Form data={data} setData={setData} />
+      <section className="login">
+        {user && (
+          <div className='user-info'>
+            <p>Hola {user.displayName}</p>
+            <img src={user.photoURL} alt={user.displayName} referrerpolicy="no-referrer" />
+          </div>
+        )}
+        <Button className="btn-login" type="button" onClick={user ? logout : loginWithGoogle}>
+          {user ? 'Cerrar' : 'Iniciar'} Sesión
+        </Button>
+      </section>
+      {user && <Form data={data} setData={setData} />}
       <section className="tweets">
         {data.map((item) => (
           <div className="tweet" key={item.id}>
