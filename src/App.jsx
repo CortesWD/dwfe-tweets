@@ -93,7 +93,7 @@ export default function App() {
         {user && (
           <div className='user-info'>
             <p>Hola {user.displayName}</p>
-            <img src={user.photoURL} alt={user.displayName} referrerpolicy="no-referrer" />
+            <img src={user.photoURL} alt={user.displayName} referrerPolicy="no-referrer" />
           </div>
         )}
         <Button className="btn-login" type="button" onClick={user ? logout : loginWithGoogle}>
