@@ -45,8 +45,10 @@ const Form = ({
         getDoc.then(doc => {
             const currentTweet = {
                 tweet: doc.data().tweet,
-                author: doc.data().author,
-                id: doc.id
+                author: doc.data().displayName,
+                id: doc.id,
+                uid:doc.data().uid,
+                email:doc.data().email
             };
 
             setData([currentTweet, ...data]);
