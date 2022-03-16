@@ -31,19 +31,31 @@ export default function App() {
       .onSnapshot((snapshot) => {
         const tweets = [];
         snapshot.forEach((doc) => {
+          const {
+            tweet,
+            author,
+            email,
+            uid,
+            likes
+          } = doc.data();
+
           const snap = {
-            tweet: doc.data().tweet,
-            author: doc.data().author,
+            //tweet: tweet,
+            tweet,
+            author,
             id: doc.id,
-            likes: doc.data().likes,
+            email,
+            uid,
+            likes,
           };
+
           tweets.push(snap);
         });
         setData(tweets);
       });
 
     auth.onAuthStateChanged((user) => {
-      console.warn('LOGGED WIDTH:', user);
+      console.warn('LOGGED WITH:', user);
       setUser(user);
     });
 
@@ -88,7 +100,13 @@ export default function App() {
           {user ? 'Cerrar' : 'Iniciar'} Sesión
         </Button>
       </section>
-      {user && <Form data={data} setData={setData} />}
+      {user && (
+        <Form
+          data={data}
+          setData={setData}
+          user={user || {}}
+        />
+      )}
       <section className="tweets">
         {data.map((item) => (
           <div className="tweet" key={item.id}>
@@ -96,6 +114,8 @@ export default function App() {
               <p>{item.tweet}</p>
               <small>
                 <strong>@{item.author}</strong>
+                <br />
+                <strong>{item.email}</strong>
               </small>
             </div>
             <div className="tweet-actions">

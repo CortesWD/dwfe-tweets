@@ -20,20 +20,25 @@ import { fireStore } from "./firebase/firebase";
 
 const Form = ({
     data = [],
-    setData
+    setData,
+    user,
 }) => {
 
-    const [value, handleInput, setValue] = useForm({
-        tweet: "",
-        author: ""
-    });
+    const [value, handleInput, setValue] = useForm({ tweet: "" });
 
-    const { tweet, author } = value;
+    const { tweet } = value;
 
     function handleSubmit(e) {
         e.preventDefault()
         //Adding tweets
-        const addTweet = fireStore.collection("tweets").add(value);
+        const newTweet = {
+            ...value,
+            uid: user.uid,
+            email: user.email,
+            author: user.displayName
+        }
+        console.warn(newTweet);
+        const addTweet = fireStore.collection("tweets").add(newTweet);
         //obtenemos referencia del documento recien creado
         const getDoc = addTweet.then(doc => (doc.get()))
         //Getting tweets
@@ -47,7 +52,7 @@ const Form = ({
             setData([currentTweet, ...data]);
         });
 
-        setValue({ tweet: "", author: "" });
+        setValue({ tweet: "" });
     }
 
     return (
@@ -58,12 +63,6 @@ const Form = ({
                 onChange={handleInput}
             >
             </textarea>
-            <input
-                name='author'
-                placeholder='Author'
-                value={author}
-                onChange={handleInput}
-            />
             <Button
                 className="btn-tweet"
                 onClick={handleSubmit}
