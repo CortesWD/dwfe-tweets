@@ -128,9 +128,12 @@ export default function App() {
                 <span>{item.likes || 0}</span>
               </button>
             </div>
-            <button className="delete" onClick={() => deleteTweet(item.id)}>
-              X
-            </button>
+            {
+              (user!==null && user.uid === item.uid ) &&
+              <button className="delete" onClick={() => deleteTweet(item.id)}>
+                X
+              </button>
+            }
           </div>
         ))}
       </section>
