@@ -29,18 +29,34 @@
    useEffect(() => {
  
      setIsSearch(true)
-     //Se toma como que la variable "setIsSearch" es "verdadera" al correrse la aplicación, pero una vez hecha una vuelta con el useEffect, esta pasará a ser "falsa", esto tiene el proposito que una vez que se "renderize" la aplicación o realice su trabajo, muestre por un codigo mas a bajo un mensaje de "cargando".
- 
+     //Se toma como que la variable "setIsSearch" es "verdadera" al correrse la aplicación, pero una vez hecha una vuelta con el useEffect, esta pasará a ser "falsa", esto tiene el proposito que una vez que se "renderize" la aplicación o realice su trabajo, muestre por un codigo mas a bajo un mensaje de "cargando". 
+      //En el "const snap" se agregarón dos propiedades mas: "email" & "uid", ademas se procedió a realizar una refactorización de los mismos componentes, mediante "prop-drilling" y usando la asignación direcata con "ecmascript5".
      const desuscribir = fireStore
        .collection("tweets")
        .onSnapshot((snapshot) => {
          const tweets = [];
          snapshot.forEach((doc) => {
+           const {
+             tweet,
+             author,
+             email,
+             uid,
+             likes
+            } = doc.data();
+            //Debido a ecmascript5 se escriben los "keyvalue" prar dirigir los componentes de abajo, si el valor de la llave y la de la constante se llaman igual, se puede escribir unicamente la llave sin afectar la logica del codigo. 
            const snap = {
-             tweet: doc.data().tweet,
-             author: doc.data().author,
+             tweet,
+             author,
              id: doc.id,
-             likes: doc.data().likes,
+             email,
+             uid,
+             likes
+            //  tweet: doc.data().tweet,
+            //  author: doc.data().author,
+            //  id: doc.id,
+            //  email: doc.data().email,
+            //  uid: doc.data().uid,
+            //  likes: doc.data().likes,
            };
            tweets.push(snap);
          });
@@ -54,8 +70,9 @@
        auth.onAuthStateChanged((user) => {
          console.warn('LOGGED WIDTH:', user);
          setUser(user);
+        //  console.log('UID:',user.uid);
        });
-       // Para el caso de tener usario de ingreso y salida, se agrego: auth.onAuthStateChanged en la linea superior.
+       // Para el caso de tener usario de ingreso y salida, se agrego: auth.onAuthStateChanged en la linea superior. En la linea superior se agregó un console.log que tomará a cuenta el UID del usuario.
      return () => {
        desuscribir();
      };
@@ -93,7 +110,7 @@
      const innerLikes = likes || 0;
      fireStore.doc(`tweets/${id}`).update({ likes: innerLikes + 1 });
    };
-//en la linea debajo del section "login", esta un botón que le pregutna al usuario si esta "fuera" de la sesión, en caso de no ser el caso, ingresarlo con el login de google, de igual manera este le pregunta al user si iniciar o cerrar sesión. Para explicar lo colocado debajo del section con "login", se toma en cuenta que al ingresar el user o usuario este despliegue "hola", mas el nombre del usuario, asi mismo una imagen anexada a la URL que se tiene en google del mismo.
+//en la linea debajo del section "login", esta un botón que le pregutna al usuario si esta "fuera" de la sesión, en caso de no ser el caso, ingresarlo con el login de google, de igual manera este le pregunta al user si iniciar o cerrar sesión. Para explicar lo colocado debajo del section con "login", se toma en cuenta que al ingresar el user o usuario este despliegue "hola", mas el nombre del usuario, asi mismo una imagen anexada a la URL que se tiene en google del mismo. En la sessión de "Form", debajo de "setData" se colocó que "uid" fuese igual a uid o un string vacio en caso de que todavía no exista el otro valor comparativo, estos valores reciben el nombre de "propiedades" o "props", donde se pasa una propiedad de un componente padre a un componente hijo o "prop drilling".
    return (
      <div className="App centered column">
        <section className="login">
@@ -107,26 +124,20 @@
            {user ? 'Cerrar' : 'Iniciar'} Sesión
          </button>
        </section>
-       {/* { user ? (
-         <>
-           <div className="user-profile">
-             <img className="user-profile-pic" src={user.photoUrl} alt="/>
-             <p>¡Hola {user.displayName}!</p>
-             <button onCLick={logout}>Log out</button>
-           </div>
-         </>
-       ) : (
-         <button className="login-btn" onCLick={logiWithGoogle}>
-           Login con google
-         </button>
-       )}; */}
-       {/* <Form data={data} setData={setData} /> */}
-       {user && <Form data={data} setData={setData} />}
+       {/* {user && <Form data={data} setData={setData} />} */}
+       {user && (
+          <Form 
+            data={data} 
+            setData={setData}
+            // uid={user.uid || ''}
+            user={user || {}} 
+          />
+        )}
        <section className="tweets">
          {isSearch ? <p>Cargando...</p> : null}
          <button type="button" onClick={() => setView("feed") }>Tweets</button>
          <button type="button" onClick={() => setView("favs") }>Favs</button>
-         {/** se colocaron dos botones para denotar cuales tweets eran "favoritos" y cuales "vistos", si el estado "view" estaba en "feed" se mostraría el "data(donde se tenían todos los tweets)" en caso contrario mostraría los tweets "favoritos", esto con el uso de un ternario y un mapeo. Todo lo que esté antes de un ".map" se somete a una "evaluación de código", pero por lo mismo que procede un .map, debe asegurarse que se analice un array. En la linea que tiene a "data" y "setData" se colocó el componente de "user", esto hace que se puedan escribir tweets UNICAMENTE cuando se haya accedido/iniciado la sesión.*/}
+         {/** se colocaron dos botones para denotar cuales tweets eran "favoritos" y cuales "vistos", si el estado "view" estaba en "feed" se mostraría el "data(donde se tenían todos los tweets)" en caso contrario mostraría los tweets "favoritos", esto con el uso de un ternario y un mapeo. Todo lo que esté antes de un ".map" se somete a una "evaluación de código", pero por lo mismo que procede un .map, debe asegurarse que se analice un array. En la linea que tiene a "data" y "setData" se colocó el componente de "user", esto hace que se puedan escribir tweets UNICAMENTE cuando se haya accedido/iniciado la sesión. Debajo sel "strong author", se agregó otro "strong" con el valor de "item.email".*/}
          {/* {data.map((item) => ( */}
          {(view === "feed" ? data : favs).map((item) => (
            <div className="tweet" key={item.id}>
@@ -134,6 +145,8 @@
                <p>{item.tweet}</p>
                <small>
                  <strong>@{item.author}</strong>
+                 <br/>
+                 <strong>{item.email}</strong>
                </small>
              </div>
              <div className="tweet-actions">
