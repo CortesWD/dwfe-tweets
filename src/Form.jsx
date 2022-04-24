@@ -22,7 +22,7 @@
             email: user.email,
             username: user.displayName,
             photo: user.photoURL,
-            // date: Date.now()
+            date: Date.now()
         }
          console.warn(newTweet);
 
@@ -36,7 +36,8 @@
                  uid: doc.data().uid,
                  email: doc.data().email,
                  photo: doc.data().photo,
-                //  date: doc.data().date,
+                 likes: doc.data().likes,
+                 date: doc.data().date,
              };
              setData([currentTweet, ...data]);
          });

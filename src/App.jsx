@@ -1,6 +1,5 @@
  //dependencies
  import React, { useEffect, useState } from "react";
-//  import { BrowserRouter,/* Switch, Route, Link */} from 'react-router-dom';
 
  //components
  import Form from "./Form";
@@ -27,23 +26,22 @@
    
    //Autentication
    useEffect(() => {
- 
      setIsSearch(true)
-     
      const desuscribir = fireStore
        .collection("tweets")
-      //  .orderBy("date")
+       .orderBy("date")
        .onSnapshot((snapshot) => {
          const tweets = [];
          snapshot.forEach((doc) => {
            const {
              tweet,
              author,
+            //  id,
              email,
              uid,
              likes, 
              photo,
-            //  date,
+             date,
             } = doc.data();
 
            const snap = {
@@ -54,19 +52,19 @@
              uid,
              likes, 
              photo,
-            //  date,
+             date,
            };
-          //  tweets.push(snap);
           tweets.unshift(snap); //en vez de push para agregarlo al principio
-
          });
          setData(tweets);
          setIsSearch(false)
+         setLoading(false)
        });
        
        auth.onAuthStateChanged((user) => {
-         
+         //console.warn('LOGGED WITH:', user);
          setUser(user)
+
          if (user) {
            fireStore.collection('users').get()
              .then(snapshot => {
@@ -92,61 +90,47 @@
        if (data.length && user.favorites && user.favorites.length) {
           const favorites = user.favorites.map(favId => {
             const tweetFav = data.find(item => item.id === favId)
-            console.log(data, favId)
+            // console.log(data, favId)
             return tweetFav
           })
             .filter(item => item !== undefined)
           setFavs(favorites)
-          console.log('FAVORITESSSSSSSSS', favorites)
+          // console.log('FAVORITESSSSSSSSS', favorites)
        }
-       console.log('DATA', data)
-       console.log('Entrando al efecto', user)
+      //  console.log('DATA', data)
+      //  console.log('Entrando al efecto', user)
 
-       fireStore.collection("users")
-         .get()
-         .then(snapshot => {
+      const findUser = fireStore.collection('users').where("uid", "==", user.uid).get()
+       findUser.then((query) => {
+        //  console.log('query', query.empty)
+         //si el usuario con campo uid NO existe en la collection "users", empty === true
+         //si el usuario con campo uid SI existe en la collection "users", empty === false
 
-           if (!snapshot.size) {
-             return fireStore.collection('users').add({
-               displayName: user.displayName,
-               photo: user.photoURL,
-               uid: user.uid,
-               email: user.email,
-               favorites: []
-             })
-           } else {
-             snapshot.forEach(doc => {
-               const userDoc = doc.data()
-               if (userDoc.uid !== user.uid) {
-//Preguntar/ver como eliminar el "useDoc.id" ya que por el "forEach" se terminan creando usuarios de forma infinita.
-                 return fireStore.collection('users').add({
-                   displayName: user.displayName,
-                   photo: user.photoURL,
-                   uid: user.uid,
-                   email: user.email,
-                   favorites: []
-                 })
-               }
-             })
-           }
-
-         })
-         .then(doc => doc.get())
-         .then(userDoc => {
-           setUser(userDoc)
-           console.warn(userDoc)
-         })
+         if (query.empty) {
+           fireStore.collection('users').add({
+             uid: user.uid,
+             name: user.displayName,
+             photo: user.photoURL,
+             email: user.email,
+             favorites: []
+           });
+         }
+       })
      }
    }, [user, data]) 
  
    //delete tweet
    const deleteTweet = (id) => {
-     const userConfirm = window.confirm("¿Estás seguro que quieres eliminar este hermoso Tweet?");
+     const userConfirm = window.confirm("¿Estás seguro que quieres eliminar este Tweet?");
+
      if (userConfirm) {
+       //Filtramos state con el documento que no se necesita con array (data es el array).filter
        const updatedTweets = data.filter((tweet) => {
          return tweet.id !== id;
        });
+       //actualizamos nuestro state con el array updateTweets actualizado 
        setData(updatedTweets);
+       //actualizamos nuestro state con el array updateTweet actualizado esto para borrar documento de firebase
        fireStore.doc(`tweets/${id}`).delete();
      }
    };
@@ -161,7 +145,7 @@
          snapshot.forEach(doc => {
            const userDoc = doc.data()
            if (userDoc.uid === user.uid) {
-             console.log(doc.id)
+            //  console.log(doc.id)
              fireStore.doc(`users/${doc.id}`).update({
                favorites: [...userDoc.favorites, id]
               })
@@ -174,7 +158,6 @@
    }
 
    return (
-    //  <BrowserRouter>
      <div className="App centered column">
        
        { user && (<Header />)}
@@ -211,12 +194,6 @@
          
          { user && (view === "feed" ? data : favs).map((item) => (
            <div className="tweet" key={item.id}>
-             
-             {/* <div className="containerPhotoTweet">
-               <img src={item.photo} alt="fotografía"/> 
-               el "containerPhotoTweet" fue sustituido por <img src={item.photo} alt={item.photo}/>
-             </div> */} 
-             
              <div className="tweet-content">
                <p>{item.tweet}</p>
                <img src={item.photo} alt={item.photo}/> 
@@ -236,6 +213,7 @@
                  
                  <span>{item.likes || 0}</span>
                </button>
+               {/* <p>-{new Date(item.date).toLocaleDateString("es-MX", {day:"numeric"}}} {new Date(item.date).toLocaleDateString("es-MX", {month:"short"})}</p> */}
              </div>
              {
                (user !== null && user.uid === item.uid) && 
@@ -249,7 +227,6 @@
        {/* } */}
        {user && (<Footer />)}
      </div>
-    //  </BrowserRouter>
    );
  }
-//Continuar video desde minuto 00:51:49, en la parte de Alejandra.
+//Continuar video desde minuto 01:43:42, en la parte de Alejandra.
